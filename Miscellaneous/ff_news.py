@@ -48,12 +48,12 @@ class Check_News():
     def retrieveUrl(self):
 
         # check if news directory exists
-        isdir = os.path.isdir('./News')  
+        isdir = os.path.isdir('./News')
         if (isdir == False):
             os.makedirs('./News')
-        
+
         myfile = requests.get(self.url)
-        xmlFile = './News/news_' + str(self.lastUpdate.day) + '.xml'
+        xmlFile = f'./News/news_{str(self.lastUpdate.day)}.xml'
         open(xmlFile, 'wb').write(myfile.content)
 
         self.titles.clear()
@@ -78,7 +78,7 @@ class Check_News():
 
         for index in range(0, len(self.titles), 1):
             # make date first
-            date = parse(self.dates[index] + ' ' + self.times[index])
+            date = parse(f'{self.dates[index]} {self.times[index]}')
             date = date - relativedelta(hours=-self.gmt_offset)
             self.news_items.append((self.countries[index], date, self.titles[index], self.impacts[index]))
 
@@ -86,7 +86,7 @@ class Check_News():
 
     def check_currency(self,
                         currency: str = 'EUR'):
-        
+
         """
             Check comming news for a currency.
 
@@ -103,15 +103,23 @@ class Check_News():
         diff = diff.total_seconds()
         if (diff > self.update_in_minutes*60):
             self.retrieveUrl()
-        
+
         for index in range (0, len(self.news_items), 1):
-            if (self.news_items[index][0] == currency):
-                # check time 
-                if (datetime.now().timestamp() > (self.news_items[index][1].timestamp() - self.minutes_before_news * 60)\
-                        and datetime.now().timestamp() < (self.news_items[index][1].timestamp() + self.minutes_after_news*60)):
-                    self.currency_date = self.news_items[index][1].timestamp() - self.minutes_before_news * 60
-                    return True, str(self.news_items[index][2]), str(self.news_items[index][3])
-        
+            if (self.news_items[index][0] == currency) and (
+                datetime.now().timestamp()
+                > (
+                    self.news_items[index][1].timestamp()
+                    - self.minutes_before_news * 60
+                )
+                and datetime.now().timestamp()
+                < (
+                    self.news_items[index][1].timestamp()
+                    + self.minutes_after_news * 60
+                )
+            ):
+                self.currency_date = self.news_items[index][1].timestamp() - self.minutes_before_news * 60
+                return True, str(self.news_items[index][2]), str(self.news_items[index][3])
+
         return False, '', ''
 
     def check_instrument(self,
@@ -137,9 +145,9 @@ class Check_News():
         if (len(instrument) < 6):
             return False, '', ''
         if (len(instrument) > 6):
-            instrument = instrument[0:6]
+            instrument = instrument[:6]
 
-        currency_1 = instrument[0:3]
+        currency_1 = instrument[:3]
         currency_2 = instrument[3:6]
 
         result_1, title_1, impact_1 = self.check_currency((currency_1))
@@ -151,20 +159,20 @@ class Check_News():
 
         if (result_1 == True and result_2 == False):
             return result_1, title_1, impact_1
-            
+
         if (result_1 == False and result_2 == True):
             return result_2, title_2, impact_2
 
         if (result_1 == True and result_2 == True):
-            if (impact_1 == 'High' and (impact_2 == 'Low' or impact_2 == 'Medium' or impact_2 == 'Holiday')):
+            if impact_1 == 'High' and impact_2 in ['Low', 'Medium', 'Holiday']:
                 return True, title_1, impact_1
-            if (impact_1 == 'Medìum' and (impact_2 == 'Low' or impact_2 == 'Holiday')):
+            if impact_1 == 'Medìum' and impact_2 in ['Low', 'Holiday']:
                 return True, title_1, impact_1
-            if (impact_2 == 'High' and (impact_1 == 'Low' or impact_1 == 'Medium' or impact_1 == 'Holiday')):
+            if impact_2 == 'High' and impact_1 in ['Low', 'Medium', 'Holiday']:
                 return True, title_2, impact_2
-            if (impact_2 == 'Medium' and (impact_1 == 'Low' or impact_1 == 'Holiday')):
+            if impact_2 == 'Medium' and impact_1 in ['Low', 'Holiday']:
                 return True, title_2, impact_2
-            if ((self.base_date < self.quote_date) and impact_1 != 'Holiday' and impact_1 != 'Holiday'):
+            if self.base_date < self.quote_date and impact_1 != 'Holiday':
                 return True, title_1, impact_1
             else:
                 return True, title_2, impact_2
@@ -175,8 +183,8 @@ class Check_News():
                                 number_of_items: int = 5) -> dict:
 
         self.number_of_items = number_of_items
-        if(self.number_of_items > 10): self.number_of_items = 10
-        
+        self.number_of_items = min(self.number_of_items, 10)
+
         """
             Create dictionary with next x news items.
 
@@ -200,7 +208,12 @@ class Check_News():
         for index in range (0, len(self.news_items)-1, 1):
             if (counter >= self.number_of_items): break
             if (self.news_items[index][1] > _date):
-                news_items[str(counter)+':'] = [str(self.news_items[index][0]), str(self.news_items[index][1]), str(self.news_items[index][2]), str(self.news_items[index][3])]
+                news_items[f'{str(counter)}:'] = [
+                    str(self.news_items[index][0]),
+                    str(self.news_items[index][1]),
+                    str(self.news_items[index][2]),
+                    str(self.news_items[index][3]),
+                ]
                 counter = counter + 1
 
         return news_items

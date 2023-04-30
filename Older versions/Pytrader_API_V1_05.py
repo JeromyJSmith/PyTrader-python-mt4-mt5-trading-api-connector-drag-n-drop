@@ -74,7 +74,7 @@ class Pytrader_API:
         self.server = server
         self.instrument_conversion_list = instrument_lookup
 
-        if (len(self.instrument_conversion_list) == 0):
+        if not self.instrument_conversion_list:
             print('Broker Instrument list not available or empty')
             self.socket_error_message = 'Broker Instrument list not available'
             return False
@@ -119,13 +119,12 @@ class Pytrader_API:
 
         x = dataString.split('#')
 
+        self.command_OK = True
         if x[1] == 'OK':
             self.timeout = True
-            self.command_OK = True
             return True
         else:
             self.timeout = False
-            self.command_OK = True
             return False
 
     @property
@@ -164,22 +163,21 @@ class Pytrader_API:
             self.command_OK = False
             return None
 
-        returnDict = {}
-        del x[0:2]
+        del x[:2]
         x.pop(-1)
 
-        returnDict['name'] = str(x[0])
-        returnDict['login'] = str(x[1])
-        returnDict['currency'] = str(x[2])
-        returnDict['type'] = str(x[3])
-        returnDict['leverage'] = int(x[4])
-        returnDict['trade_allowed'] = bool(x[5])
-        returnDict['limit_orders'] = int(x[6])
-        returnDict['margin_call'] = float(x[7])
-        returnDict['margin_close'] = float(x[8])
-
         self.command_OK = True
-        return returnDict
+        return {
+            'name': str(x[0]),
+            'login': str(x[1]),
+            'currency': str(x[2]),
+            'type': str(x[3]),
+            'leverage': int(x[4]),
+            'trade_allowed': bool(x[5]),
+            'limit_orders': int(x[6]),
+            'margin_call': float(x[7]),
+            'margin_close': float(x[8]),
+        }
 
     def Get_dynamic_account_info(self) -> dict:
         """Retrieves dynamic account information.
@@ -206,19 +204,18 @@ class Pytrader_API:
             self.command_OK = False
             return None
 
-        returnDict = {}
-        del x[0:2]
+        del x[:2]
         x.pop(-1)
 
-        returnDict['balance'] = float(x[0])
-        returnDict['equity'] = float(x[1])
-        returnDict['profit'] = float(x[2])
-        returnDict['margin'] = float(x[3])
-        returnDict['margin_level'] = float(x[4])
-        returnDict['margin_free'] = float(x[5])
-
         self.command_OK = True
-        return returnDict
+        return {
+            'balance': float(x[0]),
+            'equity': float(x[1]),
+            'profit': float(x[2]),
+            'margin': float(x[3]),
+            'margin_level': float(x[4]),
+            'margin_free': float(x[5]),
+        }
 
     def Get_PnL(self,
                     date_from: datetime = datetime(2020, 3, 3, tzinfo = pytz.timezone("Etc/UTC")),
@@ -265,25 +262,24 @@ class Pytrader_API:
                 volume_in_loss = volume_in_loss + position.volume
                 commission_in_loss = commission_in_loss + position.commission
                 swap_in_loss = swap_in_loss + position.swap
-            if (position.position_type == 'sell'):
-                    sell_profit = sell_profit + profit
-            if (position.position_type == 'buy'):
-                    buy_profit = buy_profit + profit
+            if position.position_type == 'buy':
+                buy_profit = buy_profit + profit
 
+            elif position.position_type == 'sell':
+                sell_profit = sell_profit + profit
         # retrieve dynamic account info
         dynamic_info = self.Get_dynamic_account_info()
         unrealized_profit = dynamic_info['equity'] - dynamic_info['balance']
-        result = {}
-        result['realized_profit'] = total_profit
-        result['unrealized_profit'] = unrealized_profit
-        result['buy_profit'] = buy_profit
-        result['sell_profit'] = sell_profit
-        result['positions_in_profit'] = trades_in_profit
-        result['positions_in_loss'] = trades_in_loss
-        result['volume_in_profit'] = volume_in_profit
-        result['volume_in_loss'] = volume_in_loss
-
-        return result
+        return {
+            'realized_profit': total_profit,
+            'unrealized_profit': unrealized_profit,
+            'buy_profit': buy_profit,
+            'sell_profit': sell_profit,
+            'positions_in_profit': trades_in_profit,
+            'positions_in_loss': trades_in_loss,
+            'volume_in_profit': volume_in_profit,
+            'volume_in_loss': volume_in_loss,
+        }
 
     def Get_instrument_info(self,
                             instrument: str = 'EURUSD') -> dict:
@@ -304,7 +300,7 @@ class Pytrader_API:
         self.command_return_error = ''
         self.instrument_name_universal = instrument.upper()
         self.instrument = self.get_broker_instrument_name(self.instrument_name_universal)
-        if (self.instrument == 'none' or self.instrument == None):
+        if self.instrument == 'none' or self.instrument is None:
             self.command_return_error = 'Instrument not in broker list'
             self.command_OK = False
             return None
@@ -325,21 +321,20 @@ class Pytrader_API:
             self.command_OK = False
             return None
 
-        returnDict = {}
-        del x[0:2]
+        del x[:2]
         x.pop(-1)
 
-        returnDict['instrument'] = str(self.instrument_name_universal)
-        returnDict['digits'] = int(x[0])
-        returnDict['max_lotsize'] = float(x[1])
-        returnDict['min_lotsize'] = float(x[2])
-        returnDict['lot_step'] = float(x[3])
-        returnDict['point'] = float(x[4])
-        returnDict['tick_size'] = float(x[5])
-        returnDict['tick_value'] = float(x[6])
-
         self.command_OK = True
-        return returnDict
+        return {
+            'instrument': self.instrument_name_universal,
+            'digits': int(x[0]),
+            'max_lotsize': float(x[1]),
+            'min_lotsize': float(x[2]),
+            'lot_step': float(x[3]),
+            'point': float(x[4]),
+            'tick_size': float(x[5]),
+            'tick_value': float(x[6]),
+        }
 
     def Check_instrument(self,
                          instrument: str = 'EURUSD') -> str:
@@ -373,7 +368,7 @@ class Pytrader_API:
 
         return True, str(x[2])
 
-    def Get_instruments(self) ->list:
+    def Get_instruments(self) -> list:
         """Retrieves broker market instruments list.
         Args:
             None
@@ -398,8 +393,8 @@ class Pytrader_API:
             self.command_return_error = 'Undefined error'
             self.command_OK = False
             return return_list
-        
-        del x[0:2]
+
+        del x[:2]
         x.pop(-1)
         for item in range(0, len(x)):
             _instrument = str(x[item])
@@ -432,12 +427,12 @@ class Pytrader_API:
             self.command_OK = False
             return None
 
-        del x[0:2]
+        del x[:2]
         x.pop(-1)
         y = x[0].split('-')
-        d = datetime(int(y[0]), int(y[1]), int(y[2]),
-                     int(y[3]), int(y[4]), int(y[5]))
-        return d
+        return datetime(
+            int(y[0]), int(y[1]), int(y[2]), int(y[3]), int(y[4]), int(y[5])
+        )
 
     def Get_last_tick_info(self,
                            instrument: str = 'EURUSD') -> dict:
@@ -474,19 +469,18 @@ class Pytrader_API:
             self.command_OK = False
             return None
 
-        returnDict = {}
-        del x[0:2]
+        del x[:2]
         x.pop(-1)
 
-        returnDict['instrument'] = str(self.instrument_name_universal)
-        returnDict['date'] = int(x[0])
-        returnDict['ask'] = float(x[1])
-        returnDict['bid'] = float(x[2])
-        returnDict['last'] = float(x[3])
-        returnDict['volume'] = int(x[4])
-
         self.command_OK = True
-        return returnDict
+        return {
+            'instrument': self.instrument_name_universal,
+            'date': int(x[0]),
+            'ask': float(x[1]),
+            'bid': float(x[2]),
+            'last': float(x[3]),
+            'volume': int(x[4]),
+        }
 
     def Get_last_x_ticks_from_now(self,
                                   instrument: str = 'EURUSD',
@@ -509,7 +503,7 @@ class Pytrader_API:
             self.command_return_error = 'Instrument not in list'
             self.command_OK = False
             return None
-        
+
         self.nbrofticks = nbrofticks
 
         dt = np.dtype([('date', np.int64), ('ask', np.float64), ('bid', np.float64), ('last', np.float64), ('volume', np.int32)])
@@ -540,7 +534,7 @@ class Pytrader_API:
                     self.command_OK = False
                     return None
 
-                del x[0:2]
+                del x[:2]
                 x.pop(-1)
 
                 for value in range(0, len(x)):
@@ -581,7 +575,7 @@ class Pytrader_API:
                     self.command_OK = False
                     return None
 
-                del x[0:2]
+                del x[:2]
                 x.pop(-1)
 
                 for value in range(0, len(x)):
@@ -615,7 +609,7 @@ class Pytrader_API:
                 self.command_OK = False
                 return None
 
-            del x[0:2]
+            del x[:2]
             x.pop(-1)
 
             for value in range(0, len(x)):
@@ -670,19 +664,18 @@ class Pytrader_API:
             self.command_OK = False
             return None
 
-        del x[0:2]
+        del x[:2]
         x.pop(-1)
-        returnDict = {}
-        returnDict['instrument'] = str(self.instrument_name_universal)
-        returnDict['date'] = int(x[0])
-        returnDict['open'] = float(x[1])
-        returnDict['high'] = float(x[2])
-        returnDict['low'] = float(x[3])
-        returnDict['close'] = float(x[4])
-        returnDict['volume'] = int(x[5])
-
         self.command_OK = True
-        return returnDict
+        return {
+            'instrument': self.instrument_name_universal,
+            'date': int(x[0]),
+            'open': float(x[1]),
+            'high': float(x[2]),
+            'low': float(x[3]),
+            'close': float(x[4]),
+            'volume': int(x[5]),
+        }
 
     def Get_specific_bar(self,
                                 instrument_list: list = ['EURUSD', 'GBPUSD'],
@@ -708,7 +701,7 @@ class Pytrader_API:
         for index in range (0, len(instrument_list), 1):
             _instr = self.get_broker_instrument_name(instrument_list[index].upper())
             self.command = self.command + _instr + '$'
-        
+
         self.command = self.command + '#' + str(specific_bar_index) + '#' + str(timeframe) + '#'
         ok, dataString = self.send_command(self.command)
 
@@ -725,22 +718,23 @@ class Pytrader_API:
             self.command_OK = False
             return None
 
-        del x[0:2]
+        del x[:2]
         x.pop(-1)
         result = {}
-        
+
         for value in range(0, len(x)):
             y = x[value].split('$')
-            symbol_result = {}
             symbol = str(y[0])
-            symbol_result['date'] = int(y[1])
-            symbol_result['open'] = float(y[2])
-            symbol_result['high'] = float(y[3])
-            symbol_result['low'] = float(y[4])
-            symbol_result['close'] = float(y[5])
-            symbol_result['volume'] = float(y[6])
+            symbol_result = {
+                'date': int(y[1]),
+                'open': float(y[2]),
+                'high': float(y[3]),
+                'low': float(y[4]),
+                'close': float(y[5]),
+                'volume': float(y[6]),
+            }
             result[symbol] = symbol_result
-        
+
         return result
 
     def Get_last_x_bars_from_now(self,

@@ -33,11 +33,11 @@ volume = 0.01
 slippage = 5
 magicnumber = 1000
 multiplier = 10000                                              # multiplier for calculating SL and TP, for JPY pairs should have the value of 100
-if instrument.find('JPY') >= 0:
-    multiplier = 100.0  
+if 'JPY' in instrument:
+    multiplier = 100.0
 sma_period_1 = 9
 sma_period_2 = 16
-date_value_last_bar = 0 
+date_value_last_bar = 0
 number_of_bars = 100                 
 
 #   Create simple lookup table, for the demo api only the following instruments can be traded
@@ -72,14 +72,14 @@ if (connection == True):
                         # close the position
                         MT.Close_position_by_ticket(ticket=position.ticket)
                         log.debug('trade with ticket ' + str(position.ticket) + ' closed in profit')
-                        
+
                 elif (position.instrument == instrument and position.position_type == 'buy' and SL_in_pips > 0.0 and position.magic_number == magicnumber):
                     sl = position.open_price - SL_in_pips / multiplier
                     if (actual_bar_info['close'] < sl):
                         # close the position
                         MT.Close_position_by_ticket(ticket=position.ticket)
                         log.debug('trade with ticket ' + str(position.ticket) + ' closed in loss')
-                
+
                 elif (position.instrument == instrument and position.position_type == 'sell' and TP_in_pips > 0.0 and position.magic_number == magicnumber):
                     tp = position.open_price - TP_in_pips / multiplier
                     if (actual_bar_info['close'] < tp):
@@ -118,7 +118,7 @@ if (connection == True):
             index = len(df) - 2
             # conditions will be checked on bar [index] and [index-1]
             if (df['sma_1'][index] > df['sma_2'][index] and df['sma_1'][index-1] < df['sma_2'][index-1]):           # buy condition
-                
+
                 buy_OK = MT.Open_order(instrument=instrument,
                                         ordertype='buy',
                                         volume = volume,
@@ -137,9 +137,9 @@ if (connection == True):
                             # close
                             close_OK = MT.Close_position_by_ticket(ticket=position.ticket) 
                             log.debug('closed sell trade due to cross and opening buy trade') 
-            
+
             if (df['sma_1'][index] < df['sma_2'][index] and df['sma_1'][index-1] > df['sma_2'][index-1]):           # sell condition
-                
+
                 sell_OK = MT.Open_order(instrument=instrument,
                                         ordertype='sell',
                                         volume = volume,

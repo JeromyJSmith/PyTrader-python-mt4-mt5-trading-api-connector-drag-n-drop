@@ -48,9 +48,9 @@ def config_instruments(config, section):
             option = option.upper()
             dict1[option] = config.get(section, option)
             if dict1[option] == -1:
-                print("skip: %s" % option)
+                print(f"skip: {option}")
         except BaseException:
-            print("exception on %s!" % option)
+            print(f"exception on {option}!")
             dict1[option] = None
     return dict1
 
@@ -110,7 +110,7 @@ print('')
 # StaticInfo = dictionairy
 StaticInfo = MT.Get_static_account_info()
 for prop in StaticInfo:
-    print("  {}={}".format(prop, StaticInfo[prop]))
+    print(f"  {prop}={StaticInfo[prop]}")
 print('')
 
 # Get dynamic account information
@@ -118,7 +118,7 @@ print('')
 # DynamicInfo = dictionairy
 DynamicInfo = MT.Get_dynamic_account_info()
 for prop in DynamicInfo:
-    print("  {}={}".format(prop, DynamicInfo[prop]))
+    print(f"  {prop}={DynamicInfo[prop]}")
 print('')
 
 # Get instrument information
@@ -127,7 +127,7 @@ print('')
 # value 'None' will be returned
 InstrumentInfo = MT.Get_instrument_info(instrument='EURUSD')
 for prop in InstrumentInfo:
-    print("  {}={}".format(prop, InstrumentInfo[prop]))
+    print(f"  {prop}={InstrumentInfo[prop]}")
 print('')
 
 
@@ -137,7 +137,7 @@ print('')
 LastTick = MT.Get_last_tick_info(instrument='GBPUSD')
 print('')
 for prop in LastTick:
-    print("  {}={}".format(prop, LastTick[prop]))
+    print(f"  {prop}={LastTick[prop]}")
 print('')
 
 # For Live/Paper trading
@@ -150,7 +150,7 @@ ActualBar = MT.Get_actual_bar_info(
     instrument='GBPUSD',
     timeframe=MT.get_timeframe_value('H4'))
 for prop in ActualBar:
-    print("  {}={}".format(prop, ActualBar[prop]))
+    print(f"  {prop}={ActualBar[prop]}")
 print('')
 
 

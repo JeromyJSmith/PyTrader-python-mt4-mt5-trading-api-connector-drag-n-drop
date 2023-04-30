@@ -12,106 +12,82 @@ TZ_SERVER = 'Europe/Tallinn' # EET
 TZ_LOCAL  = 'Europe/Budapest'
 TZ_UTC    = 'UTC'
 
-ERROR_DICT = {}
-ERROR_DICT['00001'] = 'Undefined check connection error'
-
-ERROR_DICT['00101'] = 'IP address error'
-ERROR_DICT['00102'] = 'Port number error'
-ERROR_DICT['00103'] = 'Connection error with license EA'
-ERROR_DICT['00104'] = 'Undefined answer from license EA'
-
-ERROR_DICT['00301'] = 'Unknown instrument for broker'
-ERROR_DICT['00302'] = 'Instrument not in demo'
-
-ERROR_DICT['00401'] = 'Instrument not in demo'
-ERROR_DICT['00402'] = 'Instrument not exists for broker'
-
-ERROR_DICT['00501'] = 'No instrument defined/configured'
-
-ERROR_DICT['02001'] = 'Instrument not in demo'
-ERROR_DICT['02002'] = 'No valid instrument'
-
-ERROR_DICT['02101'] = 'Instrument not in demo'
-ERROR_DICT['02102'] = 'No ticks'
-ERROR_DICT['02103'] = 'Not imlemented in MT4'
-
-ERROR_DICT['04101'] = 'Instrument not in demo'
-ERROR_DICT['04102'] = 'Wrong/unknown time frame'
-ERROR_DICT['04103'] = 'No records'
-ERROR_DICT['04104'] = 'Undefined error'
-
-
-ERROR_DICT['04201'] = 'Instrument not in demo'
-ERROR_DICT['04202'] = 'Wrong/unknown time frame'
-ERROR_DICT['04203'] = 'No records' 
-
-ERROR_DICT['04501'] = 'Instrument not in demo'
-ERROR_DICT['04502'] = 'Wrong/unknown time frame'
-ERROR_DICT['04503'] = 'No records'
-ERROR_DICT['04504'] = 'Missing market instrument'
-
-ERROR_DICT['06201'] = 'Wrong time window'
-ERROR_DICT['06401'] = 'Wrong time window'
-
-ERROR_DICT['07001'] = 'Trading not allowed, check MT terminal settings' 
-ERROR_DICT['07002'] = 'Instrument not in demo' 
-ERROR_DICT['07003'] = 'Instrument not in market watch' 
-ERROR_DICT['07004'] = 'Instrument not known for broker'
-ERROR_DICT['07005'] = 'Unknown order type' 
-ERROR_DICT['07006'] = 'Wrong SL value' 
-ERROR_DICT['07007'] = 'Wrong TP value'
-ERROR_DICT['07008'] = 'Wrong volume value'
-ERROR_DICT['07009'] = 'Error opening market order'
-ERROR_DICT['07010'] = 'Error opening pending order'
-
-ERROR_DICT['07101'] = 'Trading not allowed'
-ERROR_DICT['07102'] = 'Position not found/error'
-
-ERROR_DICT['07201'] = 'Trading not allowed'
-ERROR_DICT['07202'] = 'Position not found/error'
-ERROR_DICT['07203'] = 'Wrong volume'
-ERROR_DICT['07204'] = 'Error in partial close'
-
-ERROR_DICT['07301'] = 'Trading not allowed'
-ERROR_DICT['07302'] = 'Error in delete'
-
-ERROR_DICT['07501'] = 'Trading not allowed'
-ERROR_DICT['07502'] = 'Position not open' 
-ERROR_DICT['07503'] = 'Error in modify'
-
-ERROR_DICT['07601'] = 'Trading not allowed'
-ERROR_DICT['07602'] = 'Position not open' 
-ERROR_DICT['07603'] = 'Error in modify'
-
-ERROR_DICT['07701'] = 'Trading not allowed'
-ERROR_DICT['07702'] = 'Position not open' 
-ERROR_DICT['07703'] = 'Error in modify'
-
-ERROR_DICT['07801'] = 'Trading not allowed'
-ERROR_DICT['07802'] = 'Position not open' 
-ERROR_DICT['07803'] = 'Error in modify'
-
-ERROR_DICT['07901'] = 'Trading not allowed'
-ERROR_DICT['07902'] = 'Instrument not in demo'
-ERROR_DICT['07903'] = 'Order does not exist' 
-ERROR_DICT['07904'] = 'Wrong order type'
-ERROR_DICT['07905'] = 'Wrong price'
-ERROR_DICT['07906'] = 'Wrong TP value'
-ERROR_DICT['07907'] = 'Wrong SL value'
-ERROR_DICT['07908'] = 'Check error code'
-ERROR_DICT['07909'] = 'Something wrong'
-
-ERROR_DICT['08101'] = 'Unknown global variable'
-
-ERROR_DICT['08201'] = 'Log file not existing'
-ERROR_DICT['08202'] = 'Log file empty'
-ERROR_DICT['08203'] = 'Error in reading log file'
-
-ERROR_DICT['99900'] = 'Wrong authorizaton code'
-
-ERROR_DICT['99901'] = 'Undefined error'
-
-ERROR_DICT['99999'] = 'Dummy'
+ERROR_DICT = {
+    '00001': 'Undefined check connection error',
+    '00101': 'IP address error',
+    '00102': 'Port number error',
+    '00103': 'Connection error with license EA',
+    '00104': 'Undefined answer from license EA',
+    '00301': 'Unknown instrument for broker',
+    '00302': 'Instrument not in demo',
+    '00401': 'Instrument not in demo',
+    '00402': 'Instrument not exists for broker',
+    '00501': 'No instrument defined/configured',
+    '02001': 'Instrument not in demo',
+    '02002': 'No valid instrument',
+    '02101': 'Instrument not in demo',
+    '02102': 'No ticks',
+    '02103': 'Not imlemented in MT4',
+    '04101': 'Instrument not in demo',
+    '04102': 'Wrong/unknown time frame',
+    '04103': 'No records',
+    '04104': 'Undefined error',
+    '04201': 'Instrument not in demo',
+    '04202': 'Wrong/unknown time frame',
+    '04203': 'No records',
+    '04501': 'Instrument not in demo',
+    '04502': 'Wrong/unknown time frame',
+    '04503': 'No records',
+    '04504': 'Missing market instrument',
+    '06201': 'Wrong time window',
+    '06401': 'Wrong time window',
+    '07001': 'Trading not allowed, check MT terminal settings',
+    '07002': 'Instrument not in demo',
+    '07003': 'Instrument not in market watch',
+    '07004': 'Instrument not known for broker',
+    '07005': 'Unknown order type',
+    '07006': 'Wrong SL value',
+    '07007': 'Wrong TP value',
+    '07008': 'Wrong volume value',
+    '07009': 'Error opening market order',
+    '07010': 'Error opening pending order',
+    '07101': 'Trading not allowed',
+    '07102': 'Position not found/error',
+    '07201': 'Trading not allowed',
+    '07202': 'Position not found/error',
+    '07203': 'Wrong volume',
+    '07204': 'Error in partial close',
+    '07301': 'Trading not allowed',
+    '07302': 'Error in delete',
+    '07501': 'Trading not allowed',
+    '07502': 'Position not open',
+    '07503': 'Error in modify',
+    '07601': 'Trading not allowed',
+    '07602': 'Position not open',
+    '07603': 'Error in modify',
+    '07701': 'Trading not allowed',
+    '07702': 'Position not open',
+    '07703': 'Error in modify',
+    '07801': 'Trading not allowed',
+    '07802': 'Position not open',
+    '07803': 'Error in modify',
+    '07901': 'Trading not allowed',
+    '07902': 'Instrument not in demo',
+    '07903': 'Order does not exist',
+    '07904': 'Wrong order type',
+    '07905': 'Wrong price',
+    '07906': 'Wrong TP value',
+    '07907': 'Wrong SL value',
+    '07908': 'Check error code',
+    '07909': 'Something wrong',
+    '08101': 'Unknown global variable',
+    '08201': 'Log file not existing',
+    '08202': 'Log file empty',
+    '08203': 'Error in reading log file',
+    '99900': 'Wrong authorizaton code',
+    '99901': 'Undefined error',
+    '99999': 'Dummy',
+}
 
 
 class Pytrader_API:             
@@ -192,7 +168,7 @@ class Pytrader_API:
         self.instrument_conversion_list = instrument_lookup
         self.authorization_code = authorization_code
 
-        if (len(self.instrument_conversion_list) == 0):
+        if not self.instrument_conversion_list:
             print('Broker Instrument list not available or empty')
             self.socket_error_message = 'Broker Instrument list not available'
             return False
@@ -239,14 +215,13 @@ class Pytrader_API:
 
             x = dataString.split('^')
 
+            self.command_OK = True
             if x[1] == 'OK':
                 self.timeout = True
-                self.command_OK = True
                 return True
             else:
                 self.timeout = False
                 self.command_return_error = ERROR_DICT['99900']
-                self.command_OK = True
                 return False
         except:
             self.command_return_error = ERROR_DICT['00001']
@@ -292,22 +267,21 @@ class Pytrader_API:
             self.command_OK = False
             return None
 
-        returnDict = {}
-        del x[0:2]
+        del x[:2]
         x.pop(-1)
 
-        returnDict['name'] = str(x[0])
-        returnDict['login'] = str(x[1])
-        returnDict['currency'] = str(x[2])
-        returnDict['type'] = str(x[3])
-        returnDict['leverage'] = int(x[4])
-        returnDict['trade_allowed'] = bool(x[5])
-        returnDict['limit_orders'] = int(x[6])
-        returnDict['margin_call'] = float(x[7])
-        returnDict['margin_close'] = float(x[8])
-
         self.command_OK = True
-        return returnDict
+        return {
+            'name': str(x[0]),
+            'login': str(x[1]),
+            'currency': str(x[2]),
+            'type': str(x[3]),
+            'leverage': int(x[4]),
+            'trade_allowed': bool(x[5]),
+            'limit_orders': int(x[6]),
+            'margin_call': float(x[7]),
+            'margin_close': float(x[8]),
+        }
 
     def Get_dynamic_account_info(self) -> dict:
         """
@@ -337,19 +311,18 @@ class Pytrader_API:
             self.command_OK = False
             return None
 
-        returnDict = {}
-        del x[0:2]
+        del x[:2]
         x.pop(-1)
 
-        returnDict['balance'] = float(x[0])
-        returnDict['equity'] = float(x[1])
-        returnDict['profit'] = float(x[2])
-        returnDict['margin'] = float(x[3])
-        returnDict['margin_level'] = float(x[4])
-        returnDict['margin_free'] = float(x[5])
-
         self.command_OK = True
-        return returnDict
+        return {
+            'balance': float(x[0]),
+            'equity': float(x[1]),
+            'profit': float(x[2]),
+            'margin': float(x[3]),
+            'margin_level': float(x[4]),
+            'margin_free': float(x[5]),
+        }
 
     def Check_license(self) -> bool:
 
@@ -378,10 +351,7 @@ class Pytrader_API:
             return None        
 
         self.license = str(x[3])
-        if (self.license == 'Demo'):
-            return False
-        
-        return True
+        return self.license != 'Demo'
 
     def Check_trading_allowed(self,
                                 instrument = 'EURUSD') -> bool:
@@ -410,10 +380,7 @@ class Pytrader_API:
             self.command_OK = False
             return None        
 
-        if (str(x[2]) == 'NOK'):
-            return False
-       
-        return True
+        return str(x[2]) != 'NOK'
 
     def Set_bar_date_asc_desc(self,
                                 asc_desc: bool = False) -> bool:
@@ -462,44 +429,42 @@ class Pytrader_API:
         swap_in_profit = 0.0
         unrealized_profit = 0.0
 
-        
+
         # retrieve closed positions
         closed_positions = self.Get_closed_positions_within_window(date_from, date_to)
-        if type(closed_positions) == pd.DataFrame:
-            for position in closed_positions.itertuples():
-                profit = position.profit + position.commission + position.swap
-                total_profit = total_profit + profit
-                if (profit > 0.0):
-                    trades_in_profit = trades_in_profit + 1
-                    volume_in_profit = volume_in_profit + position.volume
-                    commission_in_profit = commission_in_profit + position.commission
-                    swap_in_profit = swap_in_profit + position.swap                
-                else:
-                    trades_in_loss = trades_in_loss + 1
-                    volume_in_loss = volume_in_loss + position.volume
-                    commission_in_loss = commission_in_loss + position.commission
-                    swap_in_loss = swap_in_loss + position.swap
-                if (position.position_type == 'sell'):
-                        sell_profit = sell_profit + profit
-                if (position.position_type == 'buy'):
-                        buy_profit = buy_profit + profit
-
-            # retrieve dynamic account info
-            dynamic_info = self.Get_dynamic_account_info()
-            unrealized_profit = dynamic_info['equity'] - dynamic_info['balance']
-            result = {}
-            result['realized_profit'] = total_profit
-            result['unrealized_profit'] = unrealized_profit
-            result['buy_profit'] = buy_profit
-            result['sell_profit'] = sell_profit
-            result['positions_in_profit'] = trades_in_profit
-            result['positions_in_loss'] = trades_in_loss
-            result['volume_in_profit'] = volume_in_profit
-            result['volume_in_loss'] = volume_in_loss
-
-            return result
-        else:
+        if type(closed_positions) != pd.DataFrame:
             return pd.DataFrame()
+        for position in closed_positions.itertuples():
+            profit = position.profit + position.commission + position.swap
+            total_profit = total_profit + profit
+            if (profit > 0.0):
+                trades_in_profit = trades_in_profit + 1
+                volume_in_profit = volume_in_profit + position.volume
+                commission_in_profit = commission_in_profit + position.commission
+                swap_in_profit = swap_in_profit + position.swap                
+            else:
+                trades_in_loss = trades_in_loss + 1
+                volume_in_loss = volume_in_loss + position.volume
+                commission_in_loss = commission_in_loss + position.commission
+                swap_in_loss = swap_in_loss + position.swap
+            if position.position_type == 'buy':
+                buy_profit = buy_profit + profit
+
+            elif position.position_type == 'sell':
+                sell_profit = sell_profit + profit
+        # retrieve dynamic account info
+        dynamic_info = self.Get_dynamic_account_info()
+        unrealized_profit = dynamic_info['equity'] - dynamic_info['balance']
+        return {
+            'realized_profit': total_profit,
+            'unrealized_profit': unrealized_profit,
+            'buy_profit': buy_profit,
+            'sell_profit': sell_profit,
+            'positions_in_profit': trades_in_profit,
+            'positions_in_loss': trades_in_loss,
+            'volume_in_profit': volume_in_profit,
+            'volume_in_loss': volume_in_loss,
+        }
 
     def Get_instrument_info(self,
                             instrument: str = 'EURUSD') -> dict:
@@ -525,7 +490,7 @@ class Pytrader_API:
         self.command_return_error = ''
         self.instrument_name_universal = instrument.upper()
         self.instrument = self.get_broker_instrument_name(self.instrument_name_universal)
-        if (self.instrument == 'none' or self.instrument == None):
+        if self.instrument == 'none' or self.instrument is None:
             self.command_return_error = 'Instrument not in broker list'
             self.command_OK = False
             return None
@@ -548,24 +513,23 @@ class Pytrader_API:
             self.command_OK = False
             return None
 
-        returnDict = {}
-        del x[0:2]
+        del x[:2]
         x.pop(-1)
 
-        returnDict['instrument'] = str(self.instrument_name_universal)
-        returnDict['digits'] = int(x[0])
-        returnDict['max_lotsize'] = float(x[1])
-        returnDict['min_lotsize'] = float(x[2])
-        returnDict['lot_step'] = float(x[3])
-        returnDict['point'] = float(x[4])
-        returnDict['tick_size'] = float(x[5])
-        returnDict['tick_value'] = float(x[6])
-        returnDict['swap_long'] = float(x[7])
-        returnDict['swap_short'] = float(x[8])
-        returnDict['stop_level'] = int(x[9])
-
         self.command_OK = True
-        return returnDict
+        return {
+            'instrument': self.instrument_name_universal,
+            'digits': int(x[0]),
+            'max_lotsize': float(x[1]),
+            'min_lotsize': float(x[2]),
+            'lot_step': float(x[3]),
+            'point': float(x[4]),
+            'tick_size': float(x[5]),
+            'tick_value': float(x[6]),
+            'swap_long': float(x[7]),
+            'swap_short': float(x[8]),
+            'stop_level': int(x[9]),
+        }
 
     def Check_instrument(self,
                          instrument: str = 'EURUSD') -> str:
@@ -602,7 +566,7 @@ class Pytrader_API:
 
         return True, str(x[2])
 
-    def Get_instruments(self) ->list:
+    def Get_instruments(self) -> list:
         """
         Retrieves broker market instruments list.
 
@@ -629,8 +593,8 @@ class Pytrader_API:
             self.command_return_error = ERROR_DICT[x[3]]
             self.command_OK = False
             return return_list
-        
-        del x[0:2]
+
+        del x[:2]
         x.pop(-1)
         for item in range(0, len(x)):
             _instrument = str(x[item])
@@ -665,12 +629,12 @@ class Pytrader_API:
             self.command_OK = False
             return None
 
-        del x[0:2]
+        del x[:2]
         x.pop(-1)
         y = x[0].split('-')
-        d = datetime(int(y[0]), int(y[1]), int(y[2]),
-                     int(y[3]), int(y[4]), int(y[5]))
-        return d
+        return datetime(
+            int(y[0]), int(y[1]), int(y[2]), int(y[3]), int(y[4]), int(y[5])
+        )
 
     def Get_last_tick_info(self,
                            instrument: str = 'EURUSD') -> dict:
@@ -691,7 +655,7 @@ class Pytrader_API:
         self.command_return_error = ''
         self.instrument_name_universal = instrument.upper()
         self.instrument = self.get_broker_instrument_name(self.instrument_name_universal)
-        if (self.instrument == 'none' or self.instrument == None):
+        if self.instrument == 'none' or self.instrument is None:
             self.command_return_error = 'Instrument not in list'
             self.command_OK = False
             return None
@@ -710,20 +674,19 @@ class Pytrader_API:
             self.command_OK = False
             return None
 
-        returnDict = {}
-        del x[0:2]
+        del x[:2]
         x.pop(-1)
 
-        returnDict['instrument'] = str(self.instrument_name_universal)
-        returnDict['date'] = int(x[0])
-        returnDict['ask'] = float(x[1])
-        returnDict['bid'] = float(x[2])
-        returnDict['last'] = float(x[3])
-        returnDict['volume'] = int(x[4])
-        returnDict['spread'] = float(x[5])
-
         self.command_OK = True
-        return returnDict
+        return {
+            'instrument': self.instrument_name_universal,
+            'date': int(x[0]),
+            'ask': float(x[1]),
+            'bid': float(x[2]),
+            'last': float(x[3]),
+            'volume': int(x[4]),
+            'spread': float(x[5]),
+        }
 
     def Get_last_x_ticks_from_now(self,
                                   instrument: str = 'EURUSD',
