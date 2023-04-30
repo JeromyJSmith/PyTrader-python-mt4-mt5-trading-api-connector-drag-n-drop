@@ -16,28 +16,28 @@ TZ_UTC    = 'UTC'
 
 def get_table(command, cols, field, tz=TZ_UTC, **kwargs):
         ok, resp = Pytrader_API.send_command(command)
-        if ok==True and resp[0:5]==command[0:5] and resp[-1]=="!":
-        
-            t0 = datetime(1970,1,1)
-            t1 = datetime.now()
-            if 'date_from' in kwargs.keys():
-                t0 = kwargs['date_from']
-            if 'date_to' in kwargs.keys():
-                t1 = kwargs['date_to']
-        
-            df = pd.read_table(io.StringIO(resp[resp.index('#',5)+1:-1]), sep='$', lineterminator='#',
-                            header=None,
-                            names=np.array(getattr(Pytrader_API,cols)[1:])[:,0],
-                            dtype=getattr(Pytrader_API, cols)[1:]
-            ).fillna('')
-            df.index.name = getattr(Pytrader_API,cols)[0][0]
-            for f in df.columns[df.columns.str.contains('_time')]:
-                df[f] = pd.to_datetime(df[f], unit='s').dt.tz_localize(TZ_SERVER).dt.tz_convert(tz)
-            filter = ((df[field] >= t0.astimezone()) & (df[field] <= t1.astimezone()))
-            df = df.loc[filter]
+        if ok == True and resp[:5] == command[:5] and resp[-1] == "!":
+
+                t0 = datetime(1970,1,1)
+                t1 = datetime.now()
+                if 'date_from' in kwargs:
+                        t0 = kwargs['date_from']
+                if 'date_to' in kwargs:
+                        t1 = kwargs['date_to']
+
+                df = pd.read_table(io.StringIO(resp[resp.index('#',5)+1:-1]), sep='$', lineterminator='#',
+                                header=None,
+                                names=np.array(getattr(Pytrader_API,cols)[1:])[:,0],
+                                dtype=getattr(Pytrader_API, cols)[1:]
+                ).fillna('')
+                df.index.name = getattr(Pytrader_API,cols)[0][0]
+                for f in df.columns[df.columns.str.contains('_time')]:
+                    df[f] = pd.to_datetime(df[f], unit='s').dt.tz_localize(TZ_SERVER).dt.tz_convert(tz)
+                filter = ((df[field] >= t0.astimezone()) & (df[field] <= t1.astimezone()))
+                df = df.loc[filter]
         else:
-            df = None
-        
+                df = None
+
         return df
 
 class Pytrader_API:             
@@ -96,7 +96,7 @@ class Pytrader_API:
                 server: str = '',
                 port: int = 2345,
                 instrument_lookup: dict = []) -> bool:
-        """
+            """
         Connects to a MT4 or MT5 EA/Bot.
 
         Args:
@@ -106,41 +106,41 @@ class Pytrader_API:
         Returns:
             bool: True or False
         """
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.setblocking(1)
-        self.port = port
-        self.server = server
-        self.instrument_conversion_list = instrument_lookup
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.setblocking(1)
+            self.port = port
+            self.server = server
+            self.instrument_conversion_list = instrument_lookup
 
-        if (len(self.instrument_conversion_list) == 0):
-            print('Broker Instrument list not available or empty')
-            self.socket_error_message = 'Broker Instrument list not available'
-            return False
+            if not self.instrument_conversion_list:
+                    print('Broker Instrument list not available or empty')
+                    self.socket_error_message = 'Broker Instrument list not available'
+                    return False
 
-        try:
-            self.sock.connect((self.server, self.port))
             try:
-                data_received = self.sock.recv(1000000)
-                self.connected = True
-                self.socket_error = 0
-                self.socket_error_message = ''
-                return True
+                self.sock.connect((self.server, self.port))
+                try:
+                    data_received = self.sock.recv(1000000)
+                    self.connected = True
+                    self.socket_error = 0
+                    self.socket_error_message = ''
+                    return True
+                except socket.error as msg:
+                    self.socket_error = 100
+                    self.socket_error_message = 'Could not connect to server.'
+                    self.connected = False
+                    return False
             except socket.error as msg:
-                self.socket_error = 100
-                self.socket_error_message = 'Could not connect to server.'
+                print(
+                    "Couldnt connect with the socket-server: %self.sock\n terminating program" %
+                    msg)
                 self.connected = False
+                self.socket_error = 101
+                self.socket_error_message = 'Could not connect to server.'
                 return False
-        except socket.error as msg:
-            print(
-                "Couldnt connect with the socket-server: %self.sock\n terminating program" %
-                msg)
-            self.connected = False
-            self.socket_error = 101
-            self.socket_error_message = 'Could not connect to server.'
-            return False
 
     def Check_connection(self) -> bool:
-        """
+            """
         Checks if connection with MT terminal/Ea bot is still active.
         Args:
             None
@@ -148,29 +148,28 @@ class Pytrader_API:
             bool: True or False
         """
 
-        self.command = 'F000#0#'
-        self.command_return_error = ''
-        ok, dataString = self.send_command(self.command)
+            self.command = 'F000#0#'
+            self.command_return_error = ''
+            ok, dataString = self.send_command(self.command)
 
-        try:
-            if (ok == False):
+            try:
+                    if (ok == False):
+                        self.command_OK = False
+                        return False
+
+                    x = dataString.split('#')
+
+                    self.command_OK = True
+                    if x[1] == 'OK':
+                            self.timeout = True
+                            return True
+                    else:
+                            self.timeout = False
+                            return False
+            except:
+                self.command_return_error = 'Unexpected socket communication error'
                 self.command_OK = False
                 return False
-
-            x = dataString.split('#')
-
-            if x[1] == 'OK':
-                self.timeout = True
-                self.command_OK = True
-                return True
-            else:
-                self.timeout = False
-                self.command_OK = True
-                return False
-        except:
-            self.command_return_error = 'Unexpected socket communication error'
-            self.command_OK = False
-            return False
 
     @property
     def IsConnected(self) -> bool:
@@ -181,7 +180,7 @@ class Pytrader_API:
         return self.connected
 
     def Get_static_account_info(self) -> dict:
-        """
+            """
         Retrieves static account information.
 
         Returns: Dictionary with:
@@ -195,41 +194,40 @@ class Pytrader_API:
             Account margin call percentage,
             Account close open trades margin percentage
         """
-        self.command_return_error = ''
+            self.command_return_error = ''
 
-        ok, dataString = self.send_command('F001#0#')
-        if (ok == False):
-            self.command_OK = False
-            return None
+            ok, dataString = self.send_command('F001#0#')
+            if (ok == False):
+                self.command_OK = False
+                return None
 
-        if self.debug:
-            print(dataString)
+            if self.debug:
+                print(dataString)
 
-        x = dataString.split('#')
-        if x[0] != 'F001':
-            self.command_return_error = str(x[2])
-            self.command_OK = False
-            return None
+            x = dataString.split('#')
+            if x[0] != 'F001':
+                self.command_return_error = str(x[2])
+                self.command_OK = False
+                return None
 
-        returnDict = {}
-        del x[0:2]
-        x.pop(-1)
+            del x[:2]
+            x.pop(-1)
 
-        returnDict['name'] = str(x[0])
-        returnDict['login'] = str(x[1])
-        returnDict['currency'] = str(x[2])
-        returnDict['type'] = str(x[3])
-        returnDict['leverage'] = int(x[4])
-        returnDict['trade_allowed'] = bool(x[5])
-        returnDict['limit_orders'] = int(x[6])
-        returnDict['margin_call'] = float(x[7])
-        returnDict['margin_close'] = float(x[8])
-
-        self.command_OK = True
-        return returnDict
+            self.command_OK = True
+            return {
+                'name': str(x[0]),
+                'login': str(x[1]),
+                'currency': str(x[2]),
+                'type': str(x[3]),
+                'leverage': int(x[4]),
+                'trade_allowed': bool(x[5]),
+                'limit_orders': int(x[6]),
+                'margin_call': float(x[7]),
+                'margin_close': float(x[8]),
+            }
 
     def Get_dynamic_account_info(self) -> dict:
-        """
+            """
         Retrieves dynamic account information.
 
         Returns: Dictionary with:
@@ -240,40 +238,39 @@ class Pytrader_API:
             Account margin level,
             Account margin free
         """
-        self.command_return_error = ''
+            self.command_return_error = ''
 
-        ok, dataString = self.send_command('F002#0#')
-        if (ok == False):
-            self.command_OK = False
-            return None
+            ok, dataString = self.send_command('F002#0#')
+            if (ok == False):
+                self.command_OK = False
+                return None
 
-        if self.debug:
-            print(dataString)
+            if self.debug:
+                print(dataString)
 
-        x = dataString.split('#')
-        if x[0] != 'F002':
-            self.command_return_error = str(x[2])
-            self.command_OK = False
-            return None
+            x = dataString.split('#')
+            if x[0] != 'F002':
+                self.command_return_error = str(x[2])
+                self.command_OK = False
+                return None
 
-        returnDict = {}
-        del x[0:2]
-        x.pop(-1)
+            del x[:2]
+            x.pop(-1)
 
-        returnDict['balance'] = float(x[0])
-        returnDict['equity'] = float(x[1])
-        returnDict['profit'] = float(x[2])
-        returnDict['margin'] = float(x[3])
-        returnDict['margin_level'] = float(x[4])
-        returnDict['margin_free'] = float(x[5])
-
-        self.command_OK = True
-        return returnDict
+            self.command_OK = True
+            return {
+                'balance': float(x[0]),
+                'equity': float(x[1]),
+                'profit': float(x[2]),
+                'margin': float(x[3]),
+                'margin_level': float(x[4]),
+                'margin_free': float(x[5]),
+            }
 
     def Get_PnL(self,
                     date_from: datetime = datetime(2021, 3, 1, tzinfo = pytz.timezone("Etc/UTC")),
                     date_to: datetime = datetime.now()) -> pd.DataFrame:
-        '''    
+            '''    
         Retrieves profit loss info.
 
         Args:
@@ -289,61 +286,59 @@ class Pytrader_API:
             volume_in_profit            total volume of positions in profit
             volume_in_loss              total volume of positions in loss
         '''
-        total_profit = 0.0
-        buy_profit = 0.0
-        sell_profit = 0.0
-        trades_in_loss = 0
-        trades_in_profit = 0
-        volume_in_loss = 0.0
-        volume_in_profit = 0.0
-        commission_in_loss = 0.0
-        commission_in_profit = 0.0
-        swap_in_loss = 0.0
-        swap_in_profit = 0.0
-        unrealized_profit = 0.0
+            total_profit = 0.0
+            buy_profit = 0.0
+            sell_profit = 0.0
+            trades_in_loss = 0
+            trades_in_profit = 0
+            volume_in_loss = 0.0
+            volume_in_profit = 0.0
+            commission_in_loss = 0.0
+            commission_in_profit = 0.0
+            swap_in_loss = 0.0
+            swap_in_profit = 0.0
+            unrealized_profit = 0.0
 
-        
-        # retrieve closed positions
-        closed_positions = self.Get_closed_positions_within_window(date_from, date_to)
-        if type(closed_positions) == pd.DataFrame:
+
+            # retrieve closed positions
+            closed_positions = self.Get_closed_positions_within_window(date_from, date_to)
+            if type(closed_positions) != pd.DataFrame:
+                    return None
             for position in closed_positions.itertuples():
-                profit = position.profit + position.commission + position.swap
-                total_profit = total_profit + profit
-                if (profit > 0.0):
-                    trades_in_profit = trades_in_profit + 1
-                    volume_in_profit = volume_in_profit + position.volume
-                    commission_in_profit = commission_in_profit + position.commission
-                    swap_in_profit = swap_in_profit + position.swap                
-                else:
-                    trades_in_loss = trades_in_loss + 1
-                    volume_in_loss = volume_in_loss + position.volume
-                    commission_in_loss = commission_in_loss + position.commission
-                    swap_in_loss = swap_in_loss + position.swap
-                if (position.position_type == 'sell'):
-                        sell_profit = sell_profit + profit
-                if (position.position_type == 'buy'):
-                        buy_profit = buy_profit + profit
+                    profit = position.profit + position.commission + position.swap
+                    total_profit = total_profit + profit
+                    if (profit > 0.0):
+                        trades_in_profit = trades_in_profit + 1
+                        volume_in_profit = volume_in_profit + position.volume
+                        commission_in_profit = commission_in_profit + position.commission
+                        swap_in_profit = swap_in_profit + position.swap                
+                    else:
+                        trades_in_loss = trades_in_loss + 1
+                        volume_in_loss = volume_in_loss + position.volume
+                        commission_in_loss = commission_in_loss + position.commission
+                        swap_in_loss = swap_in_loss + position.swap
+                    if position.position_type == 'buy':
+                            buy_profit = buy_profit + profit
 
+                    elif position.position_type == 'sell':
+                            sell_profit = sell_profit + profit
             # retrieve dynamic account info
             dynamic_info = self.Get_dynamic_account_info()
             unrealized_profit = dynamic_info['equity'] - dynamic_info['balance']
-            result = {}
-            result['realized_profit'] = total_profit
-            result['unrealized_profit'] = unrealized_profit
-            result['buy_profit'] = buy_profit
-            result['sell_profit'] = sell_profit
-            result['positions_in_profit'] = trades_in_profit
-            result['positions_in_loss'] = trades_in_loss
-            result['volume_in_profit'] = volume_in_profit
-            result['volume_in_loss'] = volume_in_loss
-
-            return result
-        else:
-            return None
+            return {
+                'realized_profit': total_profit,
+                'unrealized_profit': unrealized_profit,
+                'buy_profit': buy_profit,
+                'sell_profit': sell_profit,
+                'positions_in_profit': trades_in_profit,
+                'positions_in_loss': trades_in_loss,
+                'volume_in_profit': volume_in_profit,
+                'volume_in_loss': volume_in_loss,
+            }
 
     def Get_instrument_info(self,
                             instrument: str = 'EURUSD') -> dict:
-        """
+            """
         Retrieves instrument information.
 
         Args:
@@ -359,47 +354,46 @@ class Pytrader_API:
             Tick value
         """
 
-        self.command_return_error = ''
-        self.instrument_name_universal = instrument.upper()
-        self.instrument = self.get_broker_instrument_name(self.instrument_name_universal)
-        if (self.instrument == 'none' or self.instrument == None):
-            self.command_return_error = 'Instrument not in broker list'
-            self.command_OK = False
-            return None
+            self.command_return_error = ''
+            self.instrument_name_universal = instrument.upper()
+            self.instrument = self.get_broker_instrument_name(self.instrument_name_universal)
+            if self.instrument == 'none' or self.instrument is None:
+                    self.command_return_error = 'Instrument not in broker list'
+                    self.command_OK = False
+                    return None
 
 
-        self.command = 'F003#1#' + self.instrument + '#'
+            self.command = 'F003#1#' + self.instrument + '#'
 
-        ok, dataString = self.send_command(self.command)
+            ok, dataString = self.send_command(self.command)
 
-        if not ok:
-            self.command_OK = False
-            return None
+            if not ok:
+                self.command_OK = False
+                return None
 
-        if self.debug:
-            print(dataString)
+            if self.debug:
+                print(dataString)
 
-        x = dataString.split('#')
-        if x[0] != 'F003':
-            self.command_return_error = str(x[2])
-            self.command_OK = False
-            return None
+            x = dataString.split('#')
+            if x[0] != 'F003':
+                self.command_return_error = str(x[2])
+                self.command_OK = False
+                return None
 
-        returnDict = {}
-        del x[0:2]
-        x.pop(-1)
+            del x[:2]
+            x.pop(-1)
 
-        returnDict['instrument'] = str(self.instrument_name_universal)
-        returnDict['digits'] = int(x[0])
-        returnDict['max_lotsize'] = float(x[1])
-        returnDict['min_lotsize'] = float(x[2])
-        returnDict['lot_step'] = float(x[3])
-        returnDict['point'] = float(x[4])
-        returnDict['tick_size'] = float(x[5])
-        returnDict['tick_value'] = float(x[6])
-
-        self.command_OK = True
-        return returnDict
+            self.command_OK = True
+            return {
+                'instrument': self.instrument_name_universal,
+                'digits': int(x[0]),
+                'max_lotsize': float(x[1]),
+                'min_lotsize': float(x[2]),
+                'lot_step': float(x[3]),
+                'point': float(x[4]),
+                'tick_size': float(x[5]),
+                'tick_value': float(x[6]),
+            }
 
     def Check_instrument(self,
                          instrument: str = 'EURUSD') -> str:
@@ -436,8 +430,8 @@ class Pytrader_API:
 
         return True, str(x[2])
 
-    def Get_instruments(self) ->list:
-        """
+    def Get_instruments(self) -> list:
+            """
         Retrieves broker market instruments list.
 
         Args:
@@ -445,36 +439,36 @@ class Pytrader_API:
         Returns:
             List: All market symbols as universal instrument names
         """
-        self.command_return_error = ''
+            self.command_return_error = ''
 
-        self.command = 'F007#1#'
-        ok, dataString = self.send_command(self.command)
-        if not ok:
-            self.command_OK = False
-            return None
+            self.command = 'F007#1#'
+            ok, dataString = self.send_command(self.command)
+            if not ok:
+                self.command_OK = False
+                return None
 
-        if self.debug:
-            print(dataString)
+            if self.debug:
+                print(dataString)
 
-        # analyze the answer
-        return_list = []
-        x = dataString.split('#')
-        if x[0] != 'F007':
-            self.command_return_error = 'Undefined error'
-            self.command_OK = False
+            # analyze the answer
+            return_list = []
+            x = dataString.split('#')
+            if x[0] != 'F007':
+                self.command_return_error = 'Undefined error'
+                self.command_OK = False
+                return return_list
+
+            del x[:2]
+            x.pop(-1)
+            for item in range(0, len(x)):
+                _instrument = str(x[item])
+                instrument = self.get_universal_instrument_name(_instrument)
+                if (instrument != None):
+                    return_list.append(instrument)
             return return_list
-        
-        del x[0:2]
-        x.pop(-1)
-        for item in range(0, len(x)):
-            _instrument = str(x[item])
-            instrument = self.get_universal_instrument_name(_instrument)
-            if (instrument != None):
-                return_list.append(instrument)
-        return return_list
        
     def Get_broker_server_time(self) -> datetime:
-        """
+            """
         Retrieves broker server time.
 
         Args:
@@ -482,33 +476,32 @@ class Pytrader_API:
         Returns:
             datetime: Boker time
         """
-        self.command_return_error = ''
-        self.command = 'F005#0#'
-        ok, dataString = self.send_command(self.command)
+            self.command_return_error = ''
+            self.command = 'F005#0#'
+            ok, dataString = self.send_command(self.command)
 
-        if not ok:
-            self.command_OK = False
-            return None
+            if not ok:
+                self.command_OK = False
+                return None
 
-        if self.debug:
-            print(dataString)
+            if self.debug:
+                print(dataString)
 
-        x = dataString.split('#')
-        if x[0] != 'F005':
-            self.command_return_error = str(x[2])
-            self.command_OK = False
-            return None
+            x = dataString.split('#')
+            if x[0] != 'F005':
+                self.command_return_error = str(x[2])
+                self.command_OK = False
+                return None
 
-        del x[0:2]
-        x.pop(-1)
-        y = x[0].split('-')
-        d = datetime(int(y[0]), int(y[1]), int(y[2]),
-                     int(y[3]), int(y[4]), int(y[5]))
-        return d
+            del x[:2]
+            x.pop(-1)
+            y = x[0].split('-')
+            return datetime(int(y[0]), int(y[1]), int(y[2]), int(y[3]), int(y[4]),
+                            int(y[5]))
 
     def Get_last_tick_info(self,
                            instrument: str = 'EURUSD') -> dict:
-        """
+            """
         Retrieves instrument last tick data.
 
         Args:
@@ -521,46 +514,45 @@ class Pytrader_API:
             last volume,
             volume
         """
-        self.command_return_error = ''
-        self.instrument_name_universal = instrument.upper()
-        self.instrument = self.get_broker_instrument_name(self.instrument_name_universal)
-        if (self.instrument == 'none'):
-            self.command_return_error = 'Instrument not in list'
-            self.command_OK = False
-            return None
-        ok, dataString = self.send_command('F020#1#' + self.instrument)
+            self.command_return_error = ''
+            self.instrument_name_universal = instrument.upper()
+            self.instrument = self.get_broker_instrument_name(self.instrument_name_universal)
+            if (self.instrument == 'none'):
+                self.command_return_error = 'Instrument not in list'
+                self.command_OK = False
+                return None
+            ok, dataString = self.send_command('F020#1#' + self.instrument)
 
-        if not ok:
-            self.command_OK = False
-            return None
+            if not ok:
+                self.command_OK = False
+                return None
 
-        if self.debug:
-            print(dataString)
+            if self.debug:
+                print(dataString)
 
-        x = dataString.split('#')
-        if x[0] != 'F020':
-            self.command_return_error = str(x[2])
-            self.command_OK = False
-            return None
+            x = dataString.split('#')
+            if x[0] != 'F020':
+                self.command_return_error = str(x[2])
+                self.command_OK = False
+                return None
 
-        returnDict = {}
-        del x[0:2]
-        x.pop(-1)
+            del x[:2]
+            x.pop(-1)
 
-        returnDict['instrument'] = str(self.instrument_name_universal)
-        returnDict['date'] = int(x[0])
-        returnDict['ask'] = float(x[1])
-        returnDict['bid'] = float(x[2])
-        returnDict['last'] = float(x[3])
-        returnDict['volume'] = int(x[4])
-
-        self.command_OK = True
-        return returnDict
+            self.command_OK = True
+            return {
+                'instrument': self.instrument_name_universal,
+                'date': int(x[0]),
+                'ask': float(x[1]),
+                'bid': float(x[2]),
+                'last': float(x[3]),
+                'volume': int(x[4]),
+            }
 
     def Get_last_x_ticks_from_now(self,
                                   instrument: str = 'EURUSD',
                                   nbrofticks: int = 2000) -> np.array:
-        """
+            """
         Retrieves last x ticks from an instrument.
 
         Args:
@@ -573,139 +565,139 @@ class Pytrader_API:
             last volume,
             volume
         """
-        self.command_return_error = ''
-        self.instrument_name_universal = instrument.upper()
-        self.instrument = self.get_broker_instrument_name(self.instrument_name_universal)
-        if (self.instrument == 'none'):
-            self.command_return_error = 'Instrument not in list'
-            self.command_OK = False
-            return None
-        
-        self.nbrofticks = nbrofticks
-
-        dt = np.dtype([('date', np.int64), ('ask', np.float64), ('bid', np.float64), ('last', np.float64), ('volume', np.int32)])
-        #ticks = np.empty(nbrofticks, dtype=dt)
-        ticks = np.zeros(nbrofticks, dtype=dt)
-
-        if (self.nbrofticks > self.max_ticks):
-            iloop = self.numberofbars // self.max_bars
-            itail = self.numberofbars % self.max_bars
-            #iloop = self.nbrofticks / self.max_ticks
-            #iloop = math.floor(iloop)
-            #itail = int(self.nbrofticks - iloop * self.max_ticks)
-
-            for index in range(0, iloop):
-                self.command = 'F021#3#' + self.instrument + '#' + str(index * self.max_ticks) + ':' + str(self.max_ticks) + '#'
-                ok, dataString = self.send_command(self.command)
-                if not ok:
-                    self.command_OK = False
-                    return None
-                if self.debug:
-                    print(dataString)
-                    print('')
-                    print(len(dataString))
-
-                x = dataString.split('#')
-                if str(x[0]) != 'F021':
-                    self.command_return_error = str(x[2])
-                    self.command_OK = False
-                    return None
-
-                del x[0:2]
-                x.pop(-1)
-
-                for value in range(0, len(x)):
-                    y = x[value].split('$')
-
-                    ticks[value + index * self.max_ticks][0] = int(y[0])
-                    ticks[value + index * self.max_ticks][1] = float(y[1])
-                    ticks[value + index * self.max_ticks][2] = float(y[2])
-                    ticks[value + index * self.max_ticks][3] = float(y[3])
-                    ticks[value + index * self.max_ticks][4] = int(y[4])
-
-                if (len(x) < self.max_ticks):
-                    #ticks = np.sort(ticks)
-                    ticks = np.sort(ticks[ticks[:]['date']!=0])
-                    self.command_OK = True
-                    return ticks
-
-            if (itail == 0):
-                #ticks = np.sort(ticks)
-                ticks = np.sort(ticks[ticks[:]['date']!=0])
-                self.command_OK = True
-                return ticks
-
-            if (itail > 0):
-                self.command = 'F021#3#' + self.instrument + '#' + str(iloop * self.max_ticks) + '#' + str(itail) + '#'
-                ok, dataString = self.send_command(self.command)
-                if not ok:
-                    self.command_OK = False
-                    return None
-                if self.debug:
-                    print(dataString)
-                    print('')
-                    print(len(dataString))
-
-                x = dataString.split('#')
-                if str(x[0]) != 'F021':
-                    self.command_return_error = str(x[2])
-                    self.command_OK = False
-                    return None
-
-                del x[0:2]
-                x.pop(-1)
-
-                for value in range(0, len(x)):
-                    y = x[value].split('$')
-
-                    ticks[value + iloop * self.max_ticks][0] = int(y[0])
-                    ticks[value + iloop * self.max_ticks][1] = float(y[1])
-                    ticks[value + iloop * self.max_ticks][2] = float(y[2])
-                    ticks[value + iloop * self.max_ticks][3] = float(y[3])
-                    ticks[value + iloop * self.max_ticks][4] = int(y[4])
-
-                self.command_OK = True
-                #ticks = np.sort(ticks)
-                ticks = np.sort(ticks[ticks[:]['date']!=0])
-                return ticks
-        else:
-            self.command = 'F021#3#' + self.instrument + '#' + str(0) + '#' + str(self.nbrofticks) + '#'
-            ok, dataString = self.send_command(self.command)
-
-            if not ok:
-                self.command_OK = False
-                return None
-            if self.debug:
-                print(dataString)
-                print('')
-                print(len(dataString))
-
-            x = dataString.split('#')
-            if str(x[0]) != 'F021':
-                self.command_return_error = str(x[2])
+            self.command_return_error = ''
+            self.instrument_name_universal = instrument.upper()
+            self.instrument = self.get_broker_instrument_name(self.instrument_name_universal)
+            if (self.instrument == 'none'):
+                self.command_return_error = 'Instrument not in list'
                 self.command_OK = False
                 return None
 
-            del x[0:2]
-            x.pop(-1)
+            self.nbrofticks = nbrofticks
 
-            for value in range(0, len(x)):
-                y = x[value].split('$')
+            dt = np.dtype([('date', np.int64), ('ask', np.float64), ('bid', np.float64), ('last', np.float64), ('volume', np.int32)])
+            #ticks = np.empty(nbrofticks, dtype=dt)
+            ticks = np.zeros(nbrofticks, dtype=dt)
 
-                ticks[value][0] = int(y[0])
-                ticks[value][1] = float(y[1])
-                ticks[value][2] = float(y[2])
-                ticks[value][3] = float(y[3])
-                ticks[value][4] = int(y[4])
+            if (self.nbrofticks > self.max_ticks):
+                    iloop = self.numberofbars // self.max_bars
+                    itail = self.numberofbars % self.max_bars
+                            #iloop = self.nbrofticks / self.max_ticks
+                            #iloop = math.floor(iloop)
+                            #itail = int(self.nbrofticks - iloop * self.max_ticks)
 
-        self.command_OK = True
-        #return ticks
-        return ticks[:len(x)]
+                    for index in range(0, iloop):
+                            self.command = 'F021#3#' + self.instrument + '#' + str(index * self.max_ticks) + ':' + str(self.max_ticks) + '#'
+                            ok, dataString = self.send_command(self.command)
+                            if not ok:
+                                self.command_OK = False
+                                return None
+                            if self.debug:
+                                print(dataString)
+                                print('')
+                                print(len(dataString))
+
+                            x = dataString.split('#')
+                            if str(x[0]) != 'F021':
+                                self.command_return_error = str(x[2])
+                                self.command_OK = False
+                                return None
+
+                            del x[:2]
+                            x.pop(-1)
+
+                            for value in range(0, len(x)):
+                                y = x[value].split('$')
+
+                                ticks[value + index * self.max_ticks][0] = int(y[0])
+                                ticks[value + index * self.max_ticks][1] = float(y[1])
+                                ticks[value + index * self.max_ticks][2] = float(y[2])
+                                ticks[value + index * self.max_ticks][3] = float(y[3])
+                                ticks[value + index * self.max_ticks][4] = int(y[4])
+
+                            if (len(x) < self.max_ticks):
+                                #ticks = np.sort(ticks)
+                                ticks = np.sort(ticks[ticks[:]['date']!=0])
+                                self.command_OK = True
+                                return ticks
+
+                    if (itail == 0):
+                        #ticks = np.sort(ticks)
+                        ticks = np.sort(ticks[ticks[:]['date']!=0])
+                        self.command_OK = True
+                        return ticks
+
+                    if (itail > 0):
+                            self.command = 'F021#3#' + self.instrument + '#' + str(iloop * self.max_ticks) + '#' + str(itail) + '#'
+                            ok, dataString = self.send_command(self.command)
+                            if not ok:
+                                self.command_OK = False
+                                return None
+                            if self.debug:
+                                print(dataString)
+                                print('')
+                                print(len(dataString))
+
+                            x = dataString.split('#')
+                            if str(x[0]) != 'F021':
+                                self.command_return_error = str(x[2])
+                                self.command_OK = False
+                                return None
+
+                            del x[:2]
+                            x.pop(-1)
+
+                            for value in range(0, len(x)):
+                                y = x[value].split('$')
+
+                                ticks[value + iloop * self.max_ticks][0] = int(y[0])
+                                ticks[value + iloop * self.max_ticks][1] = float(y[1])
+                                ticks[value + iloop * self.max_ticks][2] = float(y[2])
+                                ticks[value + iloop * self.max_ticks][3] = float(y[3])
+                                ticks[value + iloop * self.max_ticks][4] = int(y[4])
+
+                            self.command_OK = True
+                            #ticks = np.sort(ticks)
+                            ticks = np.sort(ticks[ticks[:]['date']!=0])
+                            return ticks
+            else:
+                    self.command = 'F021#3#' + self.instrument + '#' + str(0) + '#' + str(self.nbrofticks) + '#'
+                    ok, dataString = self.send_command(self.command)
+
+                    if not ok:
+                        self.command_OK = False
+                        return None
+                    if self.debug:
+                        print(dataString)
+                        print('')
+                        print(len(dataString))
+
+                    x = dataString.split('#')
+                    if str(x[0]) != 'F021':
+                        self.command_return_error = str(x[2])
+                        self.command_OK = False
+                        return None
+
+                    del x[:2]
+                    x.pop(-1)
+
+                    for value in range(0, len(x)):
+                        y = x[value].split('$')
+
+                        ticks[value][0] = int(y[0])
+                        ticks[value][1] = float(y[1])
+                        ticks[value][2] = float(y[2])
+                        ticks[value][3] = float(y[3])
+                        ticks[value][4] = int(y[4])
+
+            self.command_OK = True
+            #return ticks
+            return ticks[:len(x)]
 
     def Get_actual_bar_info(self,
                             instrument: str = 'EURUSD',
                             timeframe: int = 16408) -> dict:
-        """
+            """
         Retrieves instrument last actual data.
 
         Args:
@@ -720,48 +712,47 @@ class Pytrader_API:
             close,
             volume
         """
-        self.command_return_error = ''
-        self.instrument_name_universal = instrument.upper()
-        self.instrument = self.get_broker_instrument_name(self.instrument_name_universal)
-        if (self.instrument == 'none'):
-            self.command_return_error = 'Instrument not in list'
-            self.command_OK = False
-            return None
-        self.command = 'F041#2#' + self.instrument + '#' + str(timeframe) + '#'
-        ok, dataString = self.send_command(self.command)
+            self.command_return_error = ''
+            self.instrument_name_universal = instrument.upper()
+            self.instrument = self.get_broker_instrument_name(self.instrument_name_universal)
+            if (self.instrument == 'none'):
+                self.command_return_error = 'Instrument not in list'
+                self.command_OK = False
+                return None
+            self.command = 'F041#2#' + self.instrument + '#' + str(timeframe) + '#'
+            ok, dataString = self.send_command(self.command)
 
-        if not ok:
-            self.command_OK = False
-            return None
+            if not ok:
+                self.command_OK = False
+                return None
 
-        if self.debug:
-            print(dataString)
+            if self.debug:
+                print(dataString)
 
-        x = dataString.split('#')
-        if str(x[0]) != 'F041':
-            self.command_return_error = str(x[2])
-            self.command_OK = False
-            return None
+            x = dataString.split('#')
+            if str(x[0]) != 'F041':
+                self.command_return_error = str(x[2])
+                self.command_OK = False
+                return None
 
-        del x[0:2]
-        x.pop(-1)
-        returnDict = {}
-        returnDict['instrument'] = str(self.instrument_name_universal)
-        returnDict['date'] = int(x[0])
-        returnDict['open'] = float(x[1])
-        returnDict['high'] = float(x[2])
-        returnDict['low'] = float(x[3])
-        returnDict['close'] = float(x[4])
-        returnDict['volume'] = int(x[5])
-
-        self.command_OK = True
-        return returnDict
+            del x[:2]
+            x.pop(-1)
+            self.command_OK = True
+            return {
+                'instrument': self.instrument_name_universal,
+                'date': int(x[0]),
+                'open': float(x[1]),
+                'high': float(x[2]),
+                'low': float(x[3]),
+                'close': float(x[4]),
+                'volume': int(x[5]),
+            }
 
     def Get_specific_bar(self,
                                 instrument_list: list = ['EURUSD', 'GBPUSD'],
                                 specific_bar_index: int = 1,
                                 timeframe: int = 16408) -> dict:
-        """
+            """
         Retrieves instrument data(d, o, h, l, c, v) of one bar(index) for the instruments in the list.
 
         Args:
@@ -777,46 +768,47 @@ class Pytrader_API:
             close,
             volume]
         """
-        self.command_return_error = ''
-        # compose MT5 command string
-        self.command = 'F045#3#'
-        for index in range (0, len(instrument_list), 1):
-            _instr = self.get_broker_instrument_name(instrument_list[index].upper())
-            self.command = self.command + _instr + '$'
-        
-        self.command = self.command + '#' + str(specific_bar_index) + '#' + str(timeframe) + '#'
-        ok, dataString = self.send_command(self.command)
+            self.command_return_error = ''
+            # compose MT5 command string
+            self.command = 'F045#3#'
+            for index in range (0, len(instrument_list), 1):
+                _instr = self.get_broker_instrument_name(instrument_list[index].upper())
+                self.command = self.command + _instr + '$'
 
-        if not ok:
-            self.command_OK = False
-            return None
+            self.command = self.command + '#' + str(specific_bar_index) + '#' + str(timeframe) + '#'
+            ok, dataString = self.send_command(self.command)
 
-        if self.debug:
-            print(dataString)
+            if not ok:
+                self.command_OK = False
+                return None
 
-        x = dataString.split('#')
-        if str(x[0]) != 'F045':
-            self.command_return_error = str(x[2])
-            self.command_OK = False
-            return None
+            if self.debug:
+                print(dataString)
 
-        del x[0:2]
-        x.pop(-1)
-        result = {}
-        
-        for value in range(0, len(x)):
-            y = x[value].split('$')
-            symbol_result = {}
-            symbol = str(y[0])
-            symbol_result['date'] = int(y[1])
-            symbol_result['open'] = float(y[2])
-            symbol_result['high'] = float(y[3])
-            symbol_result['low'] = float(y[4])
-            symbol_result['close'] = float(y[5])
-            symbol_result['volume'] = float(y[6])
-            result[symbol] = symbol_result
-        
-        return result
+            x = dataString.split('#')
+            if str(x[0]) != 'F045':
+                self.command_return_error = str(x[2])
+                self.command_OK = False
+                return None
+
+            del x[:2]
+            x.pop(-1)
+            result = {}
+
+            for value in range(0, len(x)):
+                    y = x[value].split('$')
+                    symbol = str(y[0])
+                    symbol_result = {
+                        'date': int(y[1]),
+                        'open': float(y[2]),
+                        'high': float(y[3]),
+                        'low': float(y[4]),
+                        'close': float(y[5]),
+                        'volume': float(y[6]),
+                    }
+                    result[symbol] = symbol_result
+
+            return result
 
     def Get_last_x_bars_from_now(self,
                                  instrument: str = 'EURUSD',
